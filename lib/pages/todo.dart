@@ -1,24 +1,33 @@
 import 'package:flutter/material.dart';
 
 class Todo extends StatefulWidget {
-  const Todo({Key? key}) : super(key: key);
+  final List<String> todos;
+  final List<bool?> todoCheckbox;
+
+  const Todo({Key? key, required this.todos, required this.todoCheckbox})
+      : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
-  _TodoState createState() => _TodoState();
+  TodoState createState() => TodoState();
 }
 
-class _TodoState extends State<Todo> {
-  int todoCount = 0;
+class TodoState extends State<Todo> {
   List<String> todos = <String>[];
+  List<bool?> todoCheckbox = <bool>[];
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController todoController = TextEditingController();
 
   void _addTodo() {
     setState(() {
-      todoCount++;
       todos.add(todoController.text);
+      todoCheckbox.add(false);
       todoController.clear();
+    });
+  }
+
+  void _changeCheckbox(int index, bool? value) {
+    setState(() {
+      todoCheckbox[index] = value;
     });
   }
 
@@ -60,15 +69,21 @@ class _TodoState extends State<Todo> {
         Expanded(
           child: ListView.separated(
             shrinkWrap: true,
-            itemCount: todoCount,
+            itemCount: todos.length,
             itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(todos[index]),
-                leading: Text((index + 1).toString()),
-              );
-            }, separatorBuilder: (BuildContext context, int index) { 
+              return CheckboxListTile(
+                  title: Text(todos[index]),
+                  enableFeedback: true,
+                  // value: false,
+                  onChanged: (bool? value) {
+                    _changeCheckbox(index, value);
+                  },
+                  value: todoCheckbox[index],
+                  key: Key("todo $index"));
+            },
+            separatorBuilder: (BuildContext context, int index) {
               return const Divider();
-             },
+            },
           ),
         ),
       ],
